@@ -61,7 +61,10 @@ uint64_t* filter(uint64_t* array, uint64_t* flags, uint64_t start, uint64_t end,
     print_arr(flags, size);
     
     uint64_t* flagsP = prefix_sums(flags, size);
-    *partSize = flagsP[size]-1;
+    //*partSize = flagsP[size]-1;
+    //changing this in github, instead of using a conditional to help deal with size 1 issues
+    //just gonna count in the for loop :)
+    *partSize = 0;
     printf("filter - partSize: %u\n", *partSize);
     uint64_t* partArr = (uint64_t*)calloc(*partSize, sizeof(uint64_t));
     #pragma omp parallel for
@@ -70,7 +73,8 @@ uint64_t* filter(uint64_t* array, uint64_t* flags, uint64_t start, uint64_t end,
         if (flags[i] == 1)
         {
             printf("filter - loop: %u, flags[%u]: %u, flagsP[%u]-1: %u, array[%u]: %u\n",i,i,flags[i],i,flagsP[i]-1,i,array[i]);
-            partArr[flagsP[i]-1] = array[i]; 
+            partArr[flagsP[i]-1] = array[i];
+            *partSize++;
         }
     }
     printf("filter - returning this: \n");
