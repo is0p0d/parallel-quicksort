@@ -3,6 +3,11 @@
 uint64_t rand_gen(uint64_t min, uint64_t max)
 {
     if (max == 0) return 0;
+    else if (max == min)
+    {
+        printf("rand_gen - max == min\n"); 
+        return max;
+    }
     printf("rand_gen - max: %u, min: %u\n", max, min);
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);

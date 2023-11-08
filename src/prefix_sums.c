@@ -6,7 +6,7 @@ uint64_t* prefix_sums(uint64_t* array, uint64_t size)
     if (size == 0) 
     {
         printf("prefix_sums- size 0\n");
-        return array;
+        return NULL;
     }
 
     uint64_t expon = ceil(log2(size)); //closest power of two
@@ -15,7 +15,7 @@ uint64_t* prefix_sums(uint64_t* array, uint64_t size)
     if (expon == 0) 
     {
         printf("prefix_sums- expon 0\n");
-        return array;
+        return NULL;
     }
     
     printf("prefix_sums - call ps_arrprep...\n");
@@ -72,6 +72,7 @@ uint64_t* prefix_sums(uint64_t* array, uint64_t size)
 
 uint64_t* ps_arrprep(uint64_t* array, uint64_t size, uint64_t newSize)
 {
+    printf("ps_arrprep - size: %u, newSize: %u\n", size, newSize);
     uint64_t* newArr = (uint64_t*)calloc(newSize, sizeof(uint64_t));
     #pragma omp parallel for
     for (uint64_t i = 0; i < size; i++)

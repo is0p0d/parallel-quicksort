@@ -5,9 +5,11 @@ uint64_t partition(uint64_t* array, uint64_t start, uint64_t end)
     printf("partition - start: %u, end: %u\n", start, end);
     uint64_t sizeB = 0, sizeC = 0;
     uint64_t* flags = mark(array, start, end);
+    printf("partition - starting B...\n");
     uint64_t* partB = filter(array, flags, start, end, &sizeB);
     printf("partition - sizeB: %u\n", sizeB);
     flip(flags, end-start);
+    printf("partition - starting C...\n");
     uint64_t* partC = filter(array, flags, start, end, &sizeC);
     printf("partition - sizeC: %u\n", sizeC);
     combine(array, partB, partC, (end-start), sizeB, sizeC);
@@ -64,22 +66,26 @@ uint64_t* filter(uint64_t* array, uint64_t* flags, uint64_t start, uint64_t end,
     //*partSize = flagsP[size]-1;
     //changing this in github, instead of using a conditional to help deal with size 1 issues
     //just gonna count in the for loop :)
-    *partSize = 0;
+    uint64_t partCount = 0;
     printf("filter - partSize: %u\n", *partSize);
     uint64_t* partArr = (uint64_t*)calloc(*partSize, sizeof(uint64_t));
-    #pragma omp parallel for
-    for (uint64_t i = 0; i < size; i++)
+    if (flagsP != NULL && flagsP != NULL)
     {
-        if (flags[i] == 1)
+        #pragma omp parallel for
+        for (uint64_t i = 0; i < size; i++)
         {
-            printf("filter - loop: %u, flags[%u]: %u, flagsP[%u]-1: %u, array[%u]: %u\n",i,i,flags[i],i,flagsP[i]-1,i,array[i]);
-            partArr[flagsP[i]-1] = array[i];
-            *partSize++;
+            if (flags[i] == 1)
+            {
+                printf("filter - loop: %u, flags[%u]: %u, flagsP[%u]-1: %u, array[%u]: %u\n",i,i,flags[i],i,flagsP[i]-1,i,array[i]);
+                partArr[flagsP[i]-1] = array[i];
+                partCount++;
+            }
         }
+        *partSize = partCount;
+        printf("filter - returning this: \n");
+        print_arr(partArr, *partSize);
+        free(flagsP);
     }
-    printf("filter - returning this: \n");
-    print_arr(partArr, *partSize);
-    free(flagsP);
 
     return partArr;
 }
@@ -111,13 +117,18 @@ void combine(uint64_t* arrA, uint64_t* arrB, uint64_t* arrC, uint64_t sizeA, uin
     printf("combine - passed array C:");
     print_arr(arrC, sizeC);
 
-    #pragma omp parallel for
-    for(int i = 0; i < sizeB; i++)
-        arrA[i] = arrB[i];
-    #pragma omp parallel for
-    for(int i = 0; i < sizeC; i++)
-        arrA[sizeB+i] = arrC[i];
-
+    if (sizeB != 0)
+    {
+        #pragma omp parallel for
+        for(int i = 0; i < sizeB; i++)
+            arrA[i] = arrB[i];
+    }
+    if (sizeC != 0)
+    {
+        #pragma omp parallel for
+        for(int i = 0; i < sizeC; i++)
+            arrA[sizeB+i] = arrC[i];
+    }
     printf("combine - completed array: \n");
     print_arr(arrA, sizeA);
 }
