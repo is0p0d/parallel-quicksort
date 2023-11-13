@@ -45,6 +45,7 @@ int main(uint64_t argc, char* argv[])
     uint64_t maxProc = (uint64_t)omp_get_max_threads();
     uint64_t numFlagged = 0; //for creating the B array - may end up vestigial
     //arrays and such
+    uint64_t* avgsArr = NULL:
     uint64_t* sortArr = NULL; //sorted and unsorted values, depending on execution point
     float* stArr = NULL;
 

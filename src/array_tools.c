@@ -28,3 +28,11 @@ void print_inplace(uint64_t* array, uint64_t start, uint64_t end)
         printf ("%d ", array[i]);
     printf ("\n");
 }
+
+void array_randpop(uint64_t* array, uint64_t size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        array[i] = rand_gen(0, UINT64_MAX-1);
+    }
+}
