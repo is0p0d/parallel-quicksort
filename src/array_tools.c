@@ -36,3 +36,14 @@ void array_randpop(uint64_t* array, uint64_t size)
         array[i] = rand_gen(0, UINT64_MAX-1);
     }
 }
+
+float array_avg(float* array, uint64_t size)
+{
+    float temp = 0.0;
+    for(uint64_t index = 0; index < size; index++)
+    {
+        temp += array[index];
+    }
+
+    return temp/size;
+}

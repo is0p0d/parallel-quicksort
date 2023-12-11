@@ -40,13 +40,15 @@ int main(uint64_t argc, char* argv[])
     FILE* output = NULL;
     // clock and values for timing
     clock_t timer;
-    double parTime = 0.0;
-    double serTime = 0.0;
+    float parTime = 0.0;
+    float serTime = 0.0;
     uint64_t maxProc = (uint64_t)omp_get_max_threads();
     uint64_t numFlagged = 0; //for creating the B array - may end up vestigial
     //arrays and such
-    uint64_t* avgsArr = NULL:
-    uint64_t* sortArr = NULL; //sorted and unsorted values, depending on execution point
+    float* serAvgsArr = NULL;
+    float* parAvgsArr = NULL;
+    uint64_t* sortArr1 = NULL; //sorted and unsorted values, depending on execution point
+    uint64_t* sortArr2 = NULL; //copy
     float* stArr = NULL;
 
     //start actual code
@@ -59,12 +61,46 @@ int main(uint64_t argc, char* argv[])
   
 
     printf("Processors: %d, Data Set Size: %d, Rounds: %d\n", numProc, setSize, numRnds);
-
-    avgsArr = (float*)calloc(numRnds, sizeof(float));
     
-    for (int procIndex = 0; procIndex < numProc; procIndex++)
+    for (int procIndex = 1; procIndex <= numProc; procIndex++)
     {
-        omp_set_num_threads(numProc); //setting the number of "processors" our program will attempt to use
+        serAvgsArr = (float *)calloc(numRnds, sizeof(float));
+        parAvgsArr = (float *)calloc(numRnds, sizeof(float));
+        for (int step = 0; step < numRnds; step++) //sorting an new array step number of times for data integrity, higher sample size.
+        {
+            //initialize array
+            sortArr1 = (uint64_t *)malloc(setSize*sizeof(uint64_t)); //serial sort
+            sortArr2 = (uint64_t *)malloc(setSize*sizeof(uint64_t)); //parallel sort
+            uint64_t tempRand = 0;
+            for(int arrInd = 0; arrInd < setSize; arrInd++)
+            {
+                tempRand = rand_gen(0, 256);
+                sortArr1[arrInd] = tempRand;
+                sortArr2[arrInd] = tempRand;
+            }
+            omp_set_num_threads(1); //effectively making a serial version.
+            printf("main - calling para_quicksort...\n");
+            timer = clock();
+            para_quicksort(sortArr1, 0, setSize);
+            timer = clock() - timer;
+            serAvgsArr[step] = ((float)timer)/CLOCKS_PER_SEC;
+
+            omp_set_num_threads(procIndex); //setting the number of "processors" our program will attempt to use
+            timer = clock();
+            para_quicksort(sortArr1, 0, setSize);
+            timer = clock() - timer;
+            parAvgsArr[step] = ((float)timer)/CLOCKS_PER_SEC;
+            free(sortArr2);
+            free(sortArr1);
+        }
+        //averaging those times into one value
+        parTime = array_avg(parAvgsArr, numRnds);
+        serTime = array_avg(serAvgsArr, numRnds);
+
+        printf("%i processors: p%f, s%f\n", procIndex, parTime, serTime);
+
+        free(parAvgsArr);
+        free(serAvgsArr);
     }
     
     
